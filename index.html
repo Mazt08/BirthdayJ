@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Justine!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@600;700&display=swap');
+  :root{--purple:#7B2CBF;--gold:#FFC107;--pastel:#FDE2F3;--neon:#39FF14;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Quicksand',sans-serif;background:linear-gradient(135deg,#3a0e5e,#c77dff 60%,#ffeaa7);min-height:100vh;color:#fff;overflow-x:hidden}
+  header{text-align:center;padding:6rem 1rem 2rem}
+  h1{font-family:'Pacifico',cursive;font-size:clamp(3rem,10vw,7rem);text-shadow:0 0 20px var(--gold),0 0 60px var(--purple);animation:glow 3s ease-in-out infinite alternate}
+  @keyframes glow{from{text-shadow:0 0 20px var(--gold),0 0 60px var(--purple)}to{text-shadow:0 0 40px var(--neon),0 0 80px var(--gold)}}
+  .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999}
+  section{max-width:900px;margin:auto;padding:2rem 1rem;text-align:center}
+  button{background:var(--gold);color:#3a0e5e;border:none;padding:1rem 2rem;border-radius:50px;font-size:1.2rem;cursor:pointer;box-shadow:0 0 15px var(--gold);transition:transform .2s}
+  button:hover{transform:scale(1.1)}
+  .card{background:rgba(255,255,255,0.15);border-radius:20px;padding:2rem;margin:1rem 0;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2)}
+  .stars{font-size:2rem;cursor:pointer}
+  .cake{font-size:6rem;display:inline-block;animation:bounce 2s infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+  .slider{display:flex;overflow-x:auto;gap:10px;padding:10px;scroll-snap-type:x mandatory}
+  .slider img{flex:0 0 300px;scroll-snap-align:start;height:200px;object-fit:cover;border-radius:15px}
+</style>
+</head>
+<body>
+<canvas id="confetti" class="confetti"></canvas>
+<header>
+  <h1>Happy Birthday Justine!</h1>
+  <p style="font-size:1.3rem;color:#ffeaa7">Celebrating you today and always 🎉</p>
+</header>
+
+<main>
+  <section>
+    <div class="card">
+      <h2>Photo Gallery</h2>
+      <div class="slider" id="slider">
+        <img src="1.jpg" alt="Justine's photo">
+        <img src="2.jpg" alt="Justine's photo">
+        <img src="3.jpg" alt="Justine's photo">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Music</h2>
+      <button id="musicBtn" onclick="toggleMusic(this)">🎵 Music On</button>
+      <div id="cake" class="cake" onmouseenter="cakeBounce()">🎂</div>
+    </div>
+  </section>
+</main>
+
+<script>
+// Confetti - auto falling
+const c=document.getElementById('confetti'),confCtx=c.getContext('2d');
+let pieces=[];
+function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+
+// Spawn confetti continuously
+function spawnConfetti(){
+  for(let i=0;i<5;i++){
+    pieces.push({
+      x:Math.random()*c.width,
+      y:-10,
+      w:6+Math.random()*8,
+      h:6+Math.random()*8,
+      speedY:1.5+Math.random()*3,
+      speedX:Math.random()*2-1,
+      rotation:Math.random()*360,
+      rotSpeed:Math.random()*6-3,
+      color:`hsl(${Math.random()*360},100%,60%)`,
+      shape:Math.random()>0.5?'rect':'circle'
+    });
+  }
+}
+setInterval(spawnConfetti,200);
+
+function animate(){
+  confCtx.clearRect(0,0,c.width,c.height);
+  pieces.forEach(p=>{
+    p.y+=p.speedY;
+    p.x+=p.speedX;
+    p.rotation+=p.rotSpeed;
+    confCtx.save();
+    confCtx.translate(p.x,p.y);
+    confCtx.rotate(p.rotation*Math.PI/180);
+    confCtx.fillStyle=p.color;
+    if(p.shape==='rect'){
+      confCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    } else {
+      confCtx.beginPath();
+      confCtx.arc(0,0,p.w/2,0,Math.PI*2);
+      confCtx.fill();
+    }
+    confCtx.restore();
+  });
+  pieces=pieces.filter(p=>p.y<c.height+20);
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Birthday Music - Web Audio API, looped
+let isPlaying = false;
+let audioCtx = null;
+function toggleMusic(btn){
+  if(isPlaying){
+    if(audioCtx) audioCtx.close();
+    isPlaying=false; btn.textContent='🎵 Music On'; return;
+  }
+  isPlaying=true; btn.textContent='🎵 Music Off';
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AudioCtx();
+  const playNote = (freq, duration, type='sine', time=0)=>{
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.frequency.value=freq; osc.type=type;
+    gain.gain.value=0.2;
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(time); osc.stop(time+duration);
+  };
+  const melody = [
+    [523,0.5],[523,0.5],[659,1.0],[784,1.0],
+    [659,0.5],[784,0.5],[880,1.0],[784,0.5],
+    [659,0.5],[523,0.5],[587,1.0],[659,0.5],
+    [523,1.0],[523,0.5],[659,0.5],[784,1.0],
+    [659,0.5],[784,0.5],[880,1.0],[784,0.5],
+    [659,0.5],[523,0.5],[587,1.0],[659,0.5],
+    [523,1.0],[523,0.5],[523,0.5],[587,0.5],[659,0.5],
+    [523,0.5],[587,0.5],[659,1.0],[523,1.0],
+  ];
+  const loopMelody = ()=>{
+    let t=0;
+    melody.forEach(([f,d])=>{ playNote(f,d,'sine',t); t+=d; });
+    audioCtx.onstatechange=()=>{ if(audioCtx.state==='running') loopMelody(); };
+  };
+  loopMelody();
+}
+
+function starColor(s){s.style.color=`hsl(${Math.random()*360},100%,60%)`}
+function cakeBounce(){document.getElementById('cake').style.animation='bounce 0.5s'}
+</script>
+</body>
+</html>
